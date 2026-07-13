@@ -11,7 +11,8 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 
-const WS_URL = import.meta.env.VITE_COLLAB_WS_URL || 'ws://localhost:3001/ws';
+const COLLAB_BASE = import.meta.env.VITE_COLLAB_WS_URL || 'ws://localhost:3001';
+const WS_URL = COLLAB_BASE.endsWith('/ws') ? COLLAB_BASE : `${COLLAB_BASE}/ws`;
 
 /**
  * Create a Yjs document and WebSocket provider for a room.
