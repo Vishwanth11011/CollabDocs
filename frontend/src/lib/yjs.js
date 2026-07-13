@@ -11,7 +11,7 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3001/ws';
+const WS_URL = import.meta.env.VITE_COLLAB_WS_URL || 'ws://localhost:3001/ws';
 
 /**
  * Create a Yjs document and WebSocket provider for a room.
