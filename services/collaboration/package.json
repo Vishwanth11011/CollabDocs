@@ -1,0 +1,28 @@
+{
+  "name": "@collabdocs/collaboration",
+  "version": "1.0.0",
+  "description": "Write-heavy real-time collaboration microservice with Yjs CRDTs, WebSocket, and Redis Pub/Sub",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/websocket": "^11.0.2",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.3.3",
+    "ioredis": "^5.6.1",
+    "lib0": "^0.2.99",
+    "pg": "^8.16.0",
+    "ws": "^8.18.0",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.24"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.1.3"
+  }
+}

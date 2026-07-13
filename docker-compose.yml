@@ -1,0 +1,137 @@
+# ============================================================
+# CollabDocs — Docker Compose Orchestration
+# ============================================================
+# Runs the entire distributed system locally with one command:
+#   docker-compose up --build
+#
+# Services:
+#   - PostgreSQL 16 (data persistence)
+#   - Redis 7 (caching + pub/sub)
+#   - Collaboration Service (WebSocket + Yjs)
+#   - URL Shortener Service (REST + cache-aside)
+#   - Frontend (Vite + React → Nginx)
+#   - Nginx (reverse proxy)
+# ============================================================
+
+version: '3.8'
+
+services:
+  # ── PostgreSQL ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: collabdocs-postgres
+    environment:
+      POSTGRES_DB: collabdocs
+      POSTGRES_USER: collabdocs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U collabdocs -d collabdocs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - collabdocs
+
+  # ── Redis ──
+  redis:
+    image: redis:7-alpine
+    container_name: collabdocs-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - collabdocs
+
+  # ── Collaboration Service ──
+  collaboration:
+    build:
+      context: ./services/collaboration
+      dockerfile: Dockerfile
+    container_name: collabdocs-collaboration
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://collabdocs:${POSTGRES_PASSWORD:-localdev}@postgres:5432/collabdocs
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - collabdocs
+
+  # ── URL Shortener Service ──
+  shortener:
+    build:
+      context: ./services/shortener
+      dockerfile: Dockerfile
+    container_name: collabdocs-shortener
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://collabdocs:${POSTGRES_PASSWORD:-localdev}@postgres:5432/collabdocs
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - collabdocs
+
+  # ── Frontend ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: collabdocs-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - collaboration
+      - shortener
+    restart: unless-stopped
+    networks:
+      - collabdocs
+
+  # ── Nginx Reverse Proxy ──
+  nginx:
+    image: nginx:alpine
+    container_name: collabdocs-nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - collaboration
+      - shortener
+    restart: unless-stopped
+    networks:
+      - collabdocs
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  collabdocs:
+    driver: bridge

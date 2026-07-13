@@ -1,0 +1,23 @@
+{
+  "name": "@collabdocs/shortener",
+  "version": "1.0.0",
+  "description": "Read-heavy URL shortener microservice with Redis caching and Base62 encoding",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.3.3",
+    "ioredis": "^5.6.1",
+    "pg": "^8.16.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "pino-pretty": "^13.1.3"
+  }
+}
