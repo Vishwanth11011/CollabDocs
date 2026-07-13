@@ -21,7 +21,9 @@ export default function ShareModal({ docId, onClose }) {
     try {
       const result = await createShortLink(docId);
       setShortCode(result.short_code);
-      setShortUrl(result.short_url);
+      // Always use the current browser origin so the link works in both
+      // local development and production deployments
+      setShortUrl(`${window.location.origin}/s/${result.short_code}`);
     } catch (err) {
       setError('Failed to generate short link. Is the shortener service running?');
     } finally {
@@ -101,7 +103,7 @@ export default function ShareModal({ docId, onClose }) {
                 onClick={handleCopy}
                 id="copy-link-btn"
               >
-                {copied ? '✓ Copied!' : '📋 Copy'}
+                {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
 
@@ -115,7 +117,7 @@ export default function ShareModal({ docId, onClose }) {
             </div>
 
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 16 }}>
-              💡 This link uses a 7-character Base62 encoded URL for optimal sharing.
+              This link uses a 7-character Base62 encoded URL for optimal sharing.
             </p>
           </div>
         )}
