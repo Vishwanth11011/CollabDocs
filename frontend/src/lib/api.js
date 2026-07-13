@@ -3,7 +3,8 @@
 // ============================================================
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
-const COLLAB_API_URL = import.meta.env.VITE_COLLAB_API_URL || 'http://localhost:3001';
+const WS_URL = import.meta.env.VITE_COLLAB_WS_URL || 'ws://localhost:3001';
+const COLLAB_API_URL = import.meta.env.VITE_COLLAB_API_URL || WS_URL.replace('ws://', 'http://').replace('wss://', 'https://');
 
 /**
  * Fetch all documents.
